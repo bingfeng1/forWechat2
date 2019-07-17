@@ -1,5 +1,5 @@
 {
-  "name": "forWechat2",
+  "name": "forwechat2",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,11 +10,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@koa/cors": "^2.2.3",
     "axios": "^0.19.0",
     "koa": "^2.7.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-handle-error": "0.0.5",
+    "koa-logger": "^3.2.1",
+    "koa2-router": "^1.1.2",
     "sha1": "^1.1.1"
   },
   "devDependencies": {
+    "babel-eslint": "^10.0.2",
     "eslint": "^6.0.1"
   }
 }
