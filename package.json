@@ -17,7 +17,9 @@
     "koa-handle-error": "0.0.5",
     "koa-logger": "^3.2.1",
     "koa2-router": "^1.1.2",
-    "sha1": "^1.1.1"
+    "sha1": "^1.1.1",
+    "vue": "^2.6.10",
+    "vue-server-renderer": "^2.6.10"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.2",
