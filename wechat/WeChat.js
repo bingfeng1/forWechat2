@@ -39,17 +39,19 @@ class WeChat{
             // 获取当前时间戳
             let nowTime = new Date().getTime();
             // 获取文件中过期时长（减去5分钟）
-            let overdue = nowTime + expires_in*1000 - 5*60*1000
             // 对比文件中的时间与现在的差距
-            if(nowTime>overdue){
+            if(nowTime>expires_in){
                 axios.get(`${config.https}${config.appDomain}${config.url.getAccessToken}`,{
                     params
                 }).then(data=>{
                     if(data.status == 200){
                         let result = data.data
                         access_token = result.access_token;
-                        expires_in = result.expires_in;
-                        let jsonstr = JSON.stringify(result);
+                        expires_in = nowTime + result.expires_in*1000 - 5*60*1000
+                        let jsonstr = JSON.stringify({
+                            access_token,
+                            expires_in
+                        });
                         fs.writeFile(path.resolve(__dirname,'..','wechat','access_token.json'),jsonstr,err=>{
                             if(err){
                                 throw new Error('写入access_token文件失败')
