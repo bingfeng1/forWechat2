@@ -89,3 +89,4 @@ echosite.*
 config.yml
 private.*
 *.txt
+privateConfig.json

@@ -1,6 +1,14 @@
 const sha1 = require('sha1')
+const axios = require('axios')
 // 配置项参数
 const config = require('./mainConfig.json')
+// 本地测试，这里是我自己的id和secret，防止代码提交时候，把自己信息上传
+const p_config = require('./privateConfig.json')
+Object.assign(config,p_config)
+
+let {access_token,expires_in} = require('../wechat/access_token.json')
+const fs = require('fs')
+const path = require('path')
 // 微信的总功能模块
 
 class WeChat{
@@ -9,7 +17,7 @@ class WeChat{
     }
 
     // 验证服务器
-    static checkSignature(data){
+    checkSignature(data){
         // 获取接入数据传进来的参数
         let {signature,timestamp,nonce,echostr} = data;
         // 1）将token、timestamp、nonce三个参数进行字典序排序 
@@ -18,6 +26,42 @@ class WeChat{
         let tempsha1 = sha1(tempstr);
         // 3）开发者获得加密后的字符串可与signature对比，标识该请求来源于微信
         return tempsha1 == signature ? echostr : false;
+    }
+
+    //获取token
+    getAccessToken(){
+        return new Promise(resolve=>{
+            let params = {
+                grant_type:"client_credential",
+                appid:config.appId,
+                secret:config.appsecret
+            }
+            // 获取当前时间戳
+            let nowTime = new Date().getTime();
+            // 获取文件中过期时长（减去5分钟）
+            let overdue = nowTime + expires_in*1000 - 5*60*1000
+            // 对比文件中的时间与现在的差距
+            if(nowTime>overdue){
+                axios.get(`${config.https}${config.appDomain}${config.url.getAccessToken}`,{
+                    params
+                }).then(data=>{
+                    if(data.status == 200){
+                        let result = data.data
+                        access_token = result.access_token;
+                        expires_in = result.expires_in;
+                        let jsonstr = JSON.stringify(result);
+                        fs.writeFile(path.resolve(__dirname,'..','wechat','access_token.json'),jsonstr,err=>{
+                            if(err){
+                                throw new Error('写入access_token文件失败')
+                            }
+                        })
+                    }
+                    resolve(access_token)
+                })
+            }else{
+                resolve(access_token)
+            }
+        })    
     }
 
 }

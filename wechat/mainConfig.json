@@ -1,3 +1,13 @@
 {
-    "token":"wechat"
+    "appId":"你自己的ID",
+    "appsecret":"你自己的secret",
+    "token":"wechat",
+    "appDomain":"api.weixin.qq.com",
+    "appDomain2":"api2.weixin.qq.com",
+    "http":"http://",
+    "https":"https://",
+    "url":{
+        "getAccessToken":"/cgi-bin/token?"
+
+    }
 }
