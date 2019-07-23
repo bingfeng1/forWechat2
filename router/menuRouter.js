@@ -1,6 +1,5 @@
 const Router = require('koa2-router');
 const router = new Router();
-const axios = require('axios')
 
 // 服务器验证
 router.get('/getMenu',ctx => {

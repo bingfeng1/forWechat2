@@ -6,12 +6,17 @@
   - rootRouter：根目录
     - "GET /"：用于验证微信服务器与本地服务器的连接
     - "GET /getAccessToken"：用于获取access_token使用
+  - menuRouter：目录相关
+    - "GET /getMenu"：获取按钮增加至文件保存
+    - "GET /createMenu"：创建自定义按钮
 
 - wechat微信功能模块
   - mainConfig：路由配置与固定参数
   - WeChat：微信文档中的各功能块的具体实现
     - checkSignature：用于服务器验证方法
     - getAccessToken：获取token的方法，也可以通过中间件的方式获取
+    - getMenu：获取按钮菜单
+    - createMenu：创建按钮菜单
 
 # 首先获取微信服务器的认证
 在微信公众平台中，配置服务器验证，输入本地服务的ip地址。通过get请求验证，经过WeChat的checkSignature检测配置
@@ -21,3 +26,4 @@
 https请求方式: GET
 https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET
 ```
+
