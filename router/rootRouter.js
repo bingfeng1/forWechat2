@@ -1,8 +1,5 @@
 const Router = require('koa2-router');
 const router = new Router();
-// const WeChat = require('../wechat/WeChat')
-// const querystring = require('querystring')
-
 
 // 服务器验证
 router.get('/', ctx => {

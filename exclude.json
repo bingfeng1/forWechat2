@@ -1,0 +1,8 @@
+{
+    "encludeUrl":{
+        "GET":[
+            "/",
+            "/getAccessToken"
+        ]
+    }
+}
