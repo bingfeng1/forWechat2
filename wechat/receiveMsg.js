@@ -106,5 +106,5 @@ module.exports = {
 
 // 文字自动回复
 const autoWord = new Map()
-    .set('1','项目的git 地址为：git@github.com:bingfeng1/forWeChat.git')
+    .set('1','项目的git 地址为：git@github.com:bingfeng1/forWeChat2.git')
     .set('2','自动回复还是蛮成功的')
