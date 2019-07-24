@@ -2,6 +2,9 @@ const sha1 = require('sha1')
 const axios = require('axios')
 const fs = require('fs')
 const path = require('path')
+const xmljson = require('fast-xml-parser')  //使用新的xml与json互换
+const receiveMsg = require('./receiveMsg')
+
 let { access_token, expires_in } = require('../wechat/access_token.json')
 // 微信的总功能模块
 
@@ -85,7 +88,7 @@ class WeChat {
             fs.writeFile(path.resolve(__dirname, 'menuConfig.json'), json, err => {
                 if (err) {
                     throw new Error("按钮菜单写入文件失败")
-                }else{
+                } else {
                     console.log("数据成功写入")
                 }
             })
@@ -94,24 +97,61 @@ class WeChat {
     }
 
     // 创建菜单
-    createMenu(){
+    createMenu() {
         let url = `${this.https}${this.appDomain}${this.url.createMenu}`
         let params = {
             access_token
         }
-        let {menu} = require('../wechat/menuConfig.json')
+        let { menu } = require('../wechat/menuConfig.json')
         let data = JSON.stringify(menu)
-        axios.post(url,data,{params})
-            .then(result=>{
+        axios.post(url, data, { params })
+            .then(result => {
                 let data = result.data
-                if(data.errcode ==0 && data.errmsg == "ok"){
+                if (data.errcode == 0 && data.errmsg == "ok") {
                     console.log("创建菜单成功")
-                }else{
+                } else {
                     throw new Error(data)
                 }
             })
     }
 
+    // 获取消息信息
+    handleMsg(ctx) {
+        return new Promise((resolve, reject) => {
+            let buffer = [];
+            //监听 data 事件 用于接收数据
+            ctx.req.on('data', function (data) {
+                buffer.push(data);
+            });
+            //监听 end 事件 用于处理接收完成的数据
+            ctx.req.on('end', function () {
+                let msgXml = Buffer.concat(buffer).toString('utf-8');
+                //解析xml
+                let msgJson = xmljson.parse(msgXml)
+                if (msgJson) {
+                    let result = msgJson.xml;
+                    //判断使用哪个方式去处理，默认nothing因为处理界面中没有nothing的
+                    let key = "nothing";
+                    // 根据文档，菜单事件都包含一个EventKey（注意，部分内容使用res.send没有用处）
+                    if (result.EventKey) {
+                        //判断按钮的EventKey。都是自己在config里面定义的，一样就行
+                        key = "EventKey"
+
+                    } else if (result.MsgId) {
+                        //所有接收用户消息，都会有一个MsgId先使用这个判断
+                        // let MsgId = result.MsgId;
+                        key = "MsgType"
+                    } else {
+                        // 如果没有定义的按钮key也没有msgid，那么就是关注/取消关注事件、上报地理位置事件
+                        key = "Event"
+                    }
+                    console.log(msgXml)
+                    resolve(receiveMsg[key].has(result[key]) ? receiveMsg[key].get(result[key])(result) : console.log(result, "未知事件，请查看控制台"))
+                }
+            });
+
+        })
+    }
 }
 
 module.exports = WeChat

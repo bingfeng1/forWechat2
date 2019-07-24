@@ -3,6 +3,9 @@
         "GET":[
             "/",
             "/getAccessToken"
+        ],
+        "POST":[
+            "/"
         ]
     }
 }
