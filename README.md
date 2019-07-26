@@ -29,3 +29,6 @@ https请求方式: GET
 https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET
 ```
 
+# 微信第三方网页
+- 通过按钮的url配置，成功获取了用户信息
+- 使用了一个页面绑在这个服务中（koa-static），访问后返回的url带有需要的地址，这个应该需要在页面的js中获取路由的方式拿到参数

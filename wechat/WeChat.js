@@ -5,7 +5,7 @@ const path = require('path')
 const xmljson = require('fast-xml-parser')  //使用新的xml与json互换
 const receiveMsg = require('./receiveMsg')
 
-let { access_token, expires_in } = require('../wechat/access_token.json')
+let { access_token, expires_in } = require('./access_token.json')
 // 微信的总功能模块
 
 class WeChat {
@@ -58,7 +58,7 @@ class WeChat {
                             access_token,
                             expires_in
                         });
-                        fs.writeFile(path.resolve(__dirname, '..', 'wechat', 'access_token.json'), jsonstr, err => {
+                        fs.writeFile(path.resolve(__dirname, 'access_token.json'), jsonstr, err => {
                             if (err) {
                                 throw new Error('写入access_token文件失败')
                             }
@@ -102,7 +102,7 @@ class WeChat {
         let params = {
             access_token
         }
-        let { menu } = require('../wechat/menuConfig.json')
+        let { menu } = require('./menuConfig.json')
         let data = JSON.stringify(menu)
         axios.post(url, data, { params })
             .then(result => {
