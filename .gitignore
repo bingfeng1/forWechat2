@@ -90,4 +90,3 @@ config.yml
 private.*
 *.txt
 privateConfig.json
-dist

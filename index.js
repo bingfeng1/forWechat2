@@ -18,8 +18,8 @@ Object.assign(config,p_config)
 const wechat = new WeChat(config);
 
 // 尝试增加第三方网页获取微信信息
-// const serve = require('koa-static')
-// app.use(serve('dist'));
+const serve = require('koa-static')
+app.use(serve('dist'));
 
 const onError = err => {
     console.error(err)
