@@ -33,7 +33,15 @@ app.use(logger())
         // 将wechat实例绑定在ctx中，传入路由中（不知道有没有这种做法，开脑洞想的）
         ctx.wechat = wechat;
         // 如果是GET方式，并且是/路径，就是验证服务器，不需要获取access_token了
-        if (!encludeUrl[ctx.method].includes(ctx.path)) {
+        let excludeList = encludeUrl[ctx.method];
+        let flag = false;
+        for(let v of excludeList){
+            // 通过正则匹配
+            let reg = new RegExp(v,"g")
+            flag = reg.test(ctx.path)
+            break;
+        }
+        if (!flag) {
             await ctx.wechat.getAccessToken().then(data => data)
         }
         await next()

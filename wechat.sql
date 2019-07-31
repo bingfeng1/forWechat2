@@ -21,5 +21,6 @@ CREATE TABLE `web_users_token` (
   `expires_in` VARCHAR(50) DEFAULT NULL COMMENT '微信用户token过期时间',
   `refresh_token` VARCHAR(200) DEFAULT NULL COMMENT '用于刷新token',
   `refresh_token_endtime` VARCHAR(50) DEFAULT NULL COMMENT '刷新token的有效期',
+  `scope` VARCHAR(50) DEFAULT NULL COMMENT '设置用户信息的返回',
   PRIMARY KEY (`openid`)
 )

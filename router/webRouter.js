@@ -1,35 +1,113 @@
 // 获取用户信息
 const Router = require('koa2-router');
 const router = new Router();
+const querystring = require('querystring');
 const { userAjax, userDo } = require('../webServer/wechatWeb')
 
-// 入库操作
-const { createUser, createToken } = require('../mysql/sqlData')
+// 数据库操作
+const dealSql = require('../mysql/sqlData')
 
 // 获取用户token
 router.get('/getUserToken', async ctx => {
     let params = ctx.request.search;
-    let { access_token, expires_in, openid, refresh_token, scope } = await userAjax.getToken(params)
-        .then(data =>
-            userDo.getToken(data)
-        );
-    // 下一步获取用户具体信息
-    let { nickname, sex, province, city, country, headimgurl, privilege, unionid } = await userAjax.getDetail(access_token, openid)
-        .then(data =>
-            userDo.getDetail(data)
-        );
+    // 获取openid和code
+    const { search, openid } = querystring.parse(params.replace('?', ''));
+    const { code } = querystring.parse(search.replace('?', ''));
 
-    // 入库操作这里不需要等待
-    createToken.select(['web_users_token',openid], function (error, results, fields) {
-        if (error) throw error;
-        if(!results[0]){
-            // 这部分还需要修正（可能），官方文档这一块没看懂什么意思，access_token作用都不明白
-            createToken.insert(['web_users_token', { access_token, expires_in, openid, refresh_token }])
-            createUser.insert(['web_users', { openid, nickname, sex, province, city, country, headimgurl, privilege, unionid }])        
+    let token = {};
+    // 如果有openid，那么现在数据库中，查找相关的token
+    // 如果没有那么就通过网络查询
+    if (openid) {
+        // 从数据库查找相关token
+        let params = [["access_token", "expires_in", "refresh_token", "refresh_token_endtime"], "web_users_token", { openid }]
+        token = await dealSql.SELECT(params)
+            .then(data => data[0])
+            .catch(error => {
+                throw new Error(error)
+            })
+        let nowTime = new Date().getTime();
+        // 如果token已经过期
+        if (token.expires_in < nowTime) {
+            // 如果可刷新token也过期了
+            if (token.refresh_token_endtime < nowTime) {
+                // 那么这里重新从服务器获取
+                token = await userAjax.getToken(code)
+                    .then(data => userDo.getToken(data.data)
+                    );
+            } else {
+                // 否则刷新token
+                token = await userAjax.refreshToken(token.refresh_token_endtime)
+                    .then(data => userDo.getToken(data.data))
+            }
+            let params = ["web_users_token", token, { openid }]
+            // 更新到数据库，这里不需要await
+            dealSql.UPDATE(params).then(data =>
+                data
+            ).catch(error => {
+                throw new Error(error)
+            })
+        }
+    } else {
+        // 没有openid的话，就通过接口获取
+        token = await userAjax.getToken(code)
+            .then(data => userDo.getToken(data.data)
+            );
+        // 从数据库查找相关token
+        let params = [["access_token", "expires_in", "refresh_token", "refresh_token_endtime"], "web_users_token", { openid: token.openid }]
+        dealSql.SELECT(params)
+            .then(data => {
+                if (data[0]) {
+                    let params = ["web_users_token", token, { openid: token.openid }]
+                    // 更新到数据库，这里不需要await
+                    dealSql.UPDATE(params).then(data =>
+                        data
+                    ).catch(error => {
+                        throw new Error(error)
+                    })
+                } else {
+                    let params = ["web_users_token", token]
+                    dealSql.INSERT(params).then(data =>
+                        data
+                    ).catch(error => {
+                        throw new Error(error)
+                    })
+                }
+            })
+            .catch(error => {
+                throw new Error(error)
+            })
+    }
+
+    // 这里的token已经更新完成
+    // 开始获取用户信息
+    // 先简化操作，直接获取，直接抛出
+    let { nickname, sex, province, city, country, headimgurl, privilege, unionid } = await userAjax.getDetail(token.access_token, token.openid)
+        .then(data =>
+            userDo.getDetail(data.data)
+        )
+
+    // // 入库或者更新操作
+    let select_detail_params = [["nickname", "sex", "province", "city", "country", "headimgurl", "privilege", "unionid"], "web_users", { openid: token.openid }]
+    dealSql.SELECT(select_detail_params).then(data => {
+        if (data[0]) {
+            let params = ["web_users", { nickname, sex, province, city, country, headimgurl, privilege, unionid }, { openid: token.openid }]
+            // 更新到数据库，这里不需要await
+            dealSql.UPDATE(params).then(data =>
+                data
+            ).catch(error => {
+                throw new Error(error)
+            })
+        } else {
+            let params = ["web_users", { openid: token.openid, nickname, sex, province, city, country, headimgurl, privilege, unionid }]
+            dealSql.INSERT(params).then(data =>
+                data
+            ).catch(error => {
+                throw new Error(error)
+            })
         }
     })
-    
-    ctx.body = { nickname, sex, province, city, country, headimgurl, privilege, unionid }
+
+    ctx.body = { nickname, sex, province, city, country, headimgurl, privilege, unionid };
 })
 
 module.exports = {

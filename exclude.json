@@ -2,7 +2,8 @@
     "encludeUrl":{
         "GET":[
             "/",
-            "/getAccessToken"
+            "/getAccessToken",
+            "/web/*"
         ],
         "POST":[
             "/"
