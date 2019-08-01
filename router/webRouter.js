@@ -19,7 +19,7 @@ router.get('/getUserToken', async ctx => {
     // 如果没有那么就通过网络查询
     if (openid) {
         // 从数据库查找相关token
-        let params = [["access_token", "expires_in", "refresh_token", "refresh_token_endtime"], "web_users_token", { openid }]
+        let params = [["openid","access_token", "expires_in", "refresh_token", "refresh_token_endtime"], "web_users_token", { openid }]
         token = await dealSql.SELECT(params)
             .then(data => data[0])
             .catch(error => {
@@ -28,17 +28,17 @@ router.get('/getUserToken', async ctx => {
         let nowTime = new Date().getTime();
         // 如果token已经过期
         if (token.expires_in < nowTime) {
-            // 如果可刷新token也过期了
-            if (token.refresh_token_endtime < nowTime) {
+            // // 如果可刷新token也过期了
+            // if (token.refresh_token_endtime < nowTime) {
                 // 那么这里重新从服务器获取
                 token = await userAjax.getToken(code)
                     .then(data => userDo.getToken(data.data)
                     );
-            } else {
-                // 否则刷新token
-                token = await userAjax.refreshToken(token.refresh_token_endtime)
-                    .then(data => userDo.getToken(data.data))
-            }
+            // } else {
+            //     // 否则刷新token
+            //     token = await userAjax.refreshToken(token.refresh_token)
+            //         .then(data => userDo.getToken(data.data))
+            // }
             let params = ["web_users_token", token, { openid }]
             // 更新到数据库，这里不需要await
             dealSql.UPDATE(params).then(data =>
@@ -87,25 +87,25 @@ router.get('/getUserToken', async ctx => {
         )
 
     // // 入库或者更新操作
-    let select_detail_params = [["nickname", "sex", "province", "city", "country", "headimgurl", "privilege", "unionid"], "web_users", { openid: token.openid }]
-    dealSql.SELECT(select_detail_params).then(data => {
-        if (data[0]) {
-            let params = ["web_users", { nickname, sex, province, city, country, headimgurl, privilege, unionid }, { openid: token.openid }]
-            // 更新到数据库，这里不需要await
-            dealSql.UPDATE(params).then(data =>
-                data
-            ).catch(error => {
-                throw new Error(error)
-            })
-        } else {
-            let params = ["web_users", { openid: token.openid, nickname, sex, province, city, country, headimgurl, privilege, unionid }]
-            dealSql.INSERT(params).then(data =>
-                data
-            ).catch(error => {
-                throw new Error(error)
-            })
-        }
-    })
+    // let select_detail_params = [["nickname", "sex", "province", "city", "country", "headimgurl", "privilege", "unionid"], "web_users", { openid: token.openid }]
+    // dealSql.SELECT(select_detail_params).then(data => {
+    //     if (data[0]) {
+    //         let params = ["web_users", { nickname, sex, province, city, country, headimgurl, privilege, unionid }, { openid: token.openid }]
+    //         // 更新到数据库，这里不需要await
+    //         dealSql.UPDATE(params).then(data =>
+    //             data
+    //         ).catch(error => {
+    //             throw new Error(error)
+    //         })
+    //     } else {
+    //         let params = ["web_users", { openid: token.openid, nickname, sex, province, city, country, headimgurl, privilege, unionid }]
+    //         dealSql.INSERT(params).then(data =>
+    //             data
+    //         ).catch(error => {
+    //             throw new Error(error)
+    //         })
+    //     }
+    // })
 
     ctx.body = { nickname, sex, province, city, country, headimgurl, privilege, unionid };
 })
