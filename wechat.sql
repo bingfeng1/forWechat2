@@ -1,5 +1,5 @@
 -- 创建数据库
-CREATE DATABASE wechat;
+CREATE DATABASE IF NOT EXISTS wechat default charset utf8 COLLATE utf8_general_ci;
 -- 用户表，存储用户信息
 CREATE TABLE `web_users` (
   `openid` VARCHAR(100) NOT NULL COMMENT '微信平台用户id',
@@ -12,7 +12,7 @@ CREATE TABLE `web_users` (
   `privilege` VARCHAR(500) DEFAULT NULL COMMENT '用户特权信息，json 数组，如微信沃卡用户为（chinaunicom）',
   `unionid` VARCHAR(500) DEFAULT NULL COMMENT '只有在用户将公众号绑定到微信开放平台帐号后，才会出现该字段。',
   PRIMARY KEY (`openid`)
-);
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 -- 用户信息相关的token
 CREATE TABLE `web_users_token` (
@@ -23,4 +23,18 @@ CREATE TABLE `web_users_token` (
   `refresh_token_endtime` VARCHAR(50) DEFAULT NULL COMMENT '刷新token的有效期',
   `scope` VARCHAR(50) DEFAULT NULL COMMENT '设置用户信息的返回',
   PRIMARY KEY (`openid`)
-)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+-- 生成用户信息表（自己填写的）
+CREATE TABLE `web_users_detail` (
+  `openid` VARCHAR(100) NOT NULL COMMENT '微信平台用户id',
+  `phone` VARCHAR(50) DEFAULT NULL COMMENT '用户手机号',
+  `address` VARCHAR(200) DEFAULT NULL COMMENT '用户住址',
+  `email` VARCHAR(200) DEFAULT NULL COMMENT '用户邮箱地址',
+  `birthday` VARCHAR(50) DEFAULT NULL COMMENT '用户生日',
+  `other` VARCHAR(200) DEFAULT NULL COMMENT '其他兴趣爱好',
+  PRIMARY KEY (`openid`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+DELETE FROM web_users_detail
+SELECT * from web_users_detail

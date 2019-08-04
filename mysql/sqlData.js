@@ -26,7 +26,7 @@ const INSERT = (params) => {
 const SELECT = params => {
     return new Promise((resolve, reject) => {
         let sql = params[2] ? 'SELECT ?? FROM ?? WHERE ?' : 'SELECT ?? FROM ??'
-        pool.query(sql, params, (error, results)=>{
+        pool.query(sql, params, (error, results) => {
             if (error) reject(error);
             resolve(results);
         });
@@ -37,10 +37,10 @@ const SELECT = params => {
  * 
  * @param {*} params 数组，第一个为表名，第二个为改变的值，第三个为条件
  */
-const UPDATE = params =>{
+const UPDATE = params => {
     return new Promise((resolve, reject) => {
         let sql = params[2] ? 'UPDATE ?? SET ? WHERE ?' : 'UPDATE ?? SET ?'
-        pool.query(sql, params, (error, results)=>{
+        pool.query(sql, params, (error, results) => {
             if (error) reject(error);
             resolve(results);
         });
